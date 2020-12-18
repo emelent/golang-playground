@@ -92,11 +92,13 @@ func contextStuff() {
 
 func contextGoroutineStuff() {
 	parentCtx := context.Background()
-	ctx, _ := context.WithTimeout(parentCtx, 3*time.Second)
+	// auto cancel(timeout) after 3 seconds
+	ctx, cancelFunc := context.WithTimeout(parentCtx, 3*time.Second)
 	data := make(chan string, 1)
 
 	go func() {
 		fmt.Print("working.")
+		// send data to channel after 5 seconds
 		for i := 0; i < 5; i++ {
 			time.Sleep(1 * time.Second)
 			fmt.Print(".")
@@ -105,6 +107,13 @@ func contextGoroutineStuff() {
 		fmt.Print("\n")
 	}()
 
+	// manually cancel after 1 second
+	go func() {
+		time.Sleep(1 * time.Second)
+		cancelFunc()
+	}()
+
+	// wait for first signal on either data chan or ctx.Done() chan
 	select {
 	case message := <-data:
 		fmt.Printf("message => %q\n", message)
