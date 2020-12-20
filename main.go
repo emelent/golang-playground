@@ -19,7 +19,7 @@ func sliceFun() {
 	arr := [...]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
 	sliceA := arr[:]
-	sliceB := arr[1:3]
+	sliceB := arr[2:3]
 
 	fmt.Printf("arr => %v\n", arr)
 	fmt.Printf("sliceA => %v\n", sliceA)
@@ -93,24 +93,19 @@ func contextStuff() {
 func contextGoroutineStuff() {
 	parentCtx := context.Background()
 	// auto cancel(timeout) after 3 seconds
-	ctx, cancelFunc := context.WithTimeout(parentCtx, 3*time.Second)
-	data := make(chan string, 1)
+	ctx, cancel := context.WithTimeout(parentCtx, 4*time.Second)
+	defer cancel()
+	data := make(chan string)
 
 	go func() {
 		fmt.Print("working.")
 		// send data to channel after 5 seconds
-		for i := 0; i < 5; i++ {
-			time.Sleep(1 * time.Second)
-			fmt.Print(".")
-		}
+		// for i := 0; i < 5; i++ {
+		// time.Sleep(1 * time.Second)
+		// fmt.Print(".")
+		// }
 		data <- "the string you waited for"
-		fmt.Print("\n")
-	}()
-
-	// manually cancel after 1 second
-	go func() {
-		time.Sleep(1 * time.Second)
-		cancelFunc()
+		fmt.Println("\ndone")
 	}()
 
 	// wait for first signal on either data chan or ctx.Done() chan
@@ -122,7 +117,64 @@ func contextGoroutineStuff() {
 	}
 }
 
+func stringThingsAndTypes() {
+
+	type aType = uint8
+	type bType uint8
+
+	s := "This is a string"
+	a := aType(s[0])
+	b := bType(s[0])
+
+	fmt.Printf("type of s[0] => %T\n", s[0])
+	fmt.Printf("value of s[0] => %q\n", s[0])
+
+	fmt.Printf("type of a => %T\n", a)
+	fmt.Printf("value of a => %q\n", a)
+
+	fmt.Printf("type of b => %T\n", b)
+	fmt.Printf("value of b => %q\n", b)
+}
+
+func enumThings() {
+	type Vehicle int
+
+	const (
+		Bike Vehicle = iota
+		Scooter
+		Car
+		Bus
+		Train
+	)
+
+	v := Vehicle(5)
+	fmt.Printf("value v => %v\n", v)
+	fmt.Printf("type v => %T\n", v)
+}
+
+func pingPongGoroutine() {
+
+	type Ball struct{ hits int }
+
+	table := make(chan *Ball)
+
+	player := func(name string, table chan *Ball) {
+		// fmt.Printf("%q now playing\n", name)
+		for {
+			ball := <-table
+			ball.hits++
+			fmt.Println(name, ball.hits)
+			time.Sleep(100 * time.Millisecond)
+			table <- ball
+		}
+	}
+	go player("ping", table)
+	go player("pong", table)
+
+	table <- new(Ball) // game on; toss the ball
+	time.Sleep(1 * time.Second)
+	<-table // game over; grab  the ball
+}
 func main() {
-	// contextStuff()
-	contextGoroutineStuff()
+	pingPongGoroutine()
 }
