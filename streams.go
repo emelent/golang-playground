@@ -59,3 +59,18 @@ func decodeSample() {
 		fmt.Printf("%s: %s\n", m.Name, m.Text)
 	}
 }
+
+func manualRead() {
+	r := strings.NewReader("What a marvelous array of syllables forming words that form a sentence.")
+
+	data := make([]byte, 8)
+	for i := 0; i < 3; i++ {
+		fmt.Println("Pass ", i+1)
+		bytesRead, _ := r.Read(data)
+		fmt.Printf("\nRead %d bytes into data\n", bytesRead)
+		fmt.Printf("data[0] = %v\n", data[0])
+		fmt.Printf("string(data[0]) = %q\n", string(data[:1]))
+		fmt.Printf("string(data) = %q\n\n\n", string(data))
+	}
+
+}
