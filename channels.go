@@ -23,20 +23,20 @@ func directedChannels() {
 	fmt.Println(<-pongs)
 }
 
+func generate(nums ...int) <-chan int {
+	out := make(chan int)
+	go func() {
+		for _, n := range nums {
+			out <- n
+		}
+
+		close(out)
+	}()
+
+	return out
+}
+
 func pipelineSample() {
-
-	generate := func(nums ...int) <-chan int {
-		out := make(chan int)
-		go func() {
-			for _, n := range nums {
-				out <- n
-			}
-
-			close(out)
-		}()
-
-		return out
-	}
 
 	square := func(in <-chan int) <-chan int {
 		out := make(chan int)
